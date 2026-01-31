@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package api;
+option go_package = "github.com/0ppliger/open-asset-gateway/api";
+
+service Greeting {
+  rpc SayHello(SayHelloInput) returns (SayHelloOutput) {}
+}
+
+message SayHelloInput {
+  string value = 1;
+}
+
+message SayHelloOutput {
+  string value = 1;
+}
