@@ -38,3 +38,5 @@ go.work.sum
 auto-save-list
 tramp
 .\#*
+
+data/*

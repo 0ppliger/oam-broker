@@ -19,101 +19,101 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Greeting_SayHello_FullMethodName = "/api.Greeting/SayHello"
+	StoreService_CreateIPAddress_FullMethodName = "/api.StoreService/CreateIPAddress"
 )
 
-// GreetingClient is the client API for Greeting service.
+// StoreServiceClient is the client API for StoreService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type GreetingClient interface {
-	SayHello(ctx context.Context, in *SayHelloInput, opts ...grpc.CallOption) (*SayHelloOutput, error)
+type StoreServiceClient interface {
+	CreateIPAddress(ctx context.Context, in *IPAddressAsset, opts ...grpc.CallOption) (*IPAddressEntity, error)
 }
 
-type greetingClient struct {
+type storeServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewGreetingClient(cc grpc.ClientConnInterface) GreetingClient {
-	return &greetingClient{cc}
+func NewStoreServiceClient(cc grpc.ClientConnInterface) StoreServiceClient {
+	return &storeServiceClient{cc}
 }
 
-func (c *greetingClient) SayHello(ctx context.Context, in *SayHelloInput, opts ...grpc.CallOption) (*SayHelloOutput, error) {
+func (c *storeServiceClient) CreateIPAddress(ctx context.Context, in *IPAddressAsset, opts ...grpc.CallOption) (*IPAddressEntity, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(SayHelloOutput)
-	err := c.cc.Invoke(ctx, Greeting_SayHello_FullMethodName, in, out, cOpts...)
+	out := new(IPAddressEntity)
+	err := c.cc.Invoke(ctx, StoreService_CreateIPAddress_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// GreetingServer is the server API for Greeting service.
-// All implementations must embed UnimplementedGreetingServer
+// StoreServiceServer is the server API for StoreService service.
+// All implementations must embed UnimplementedStoreServiceServer
 // for forward compatibility.
-type GreetingServer interface {
-	SayHello(context.Context, *SayHelloInput) (*SayHelloOutput, error)
-	mustEmbedUnimplementedGreetingServer()
+type StoreServiceServer interface {
+	CreateIPAddress(context.Context, *IPAddressAsset) (*IPAddressEntity, error)
+	mustEmbedUnimplementedStoreServiceServer()
 }
 
-// UnimplementedGreetingServer must be embedded to have
+// UnimplementedStoreServiceServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedGreetingServer struct{}
+type UnimplementedStoreServiceServer struct{}
 
-func (UnimplementedGreetingServer) SayHello(context.Context, *SayHelloInput) (*SayHelloOutput, error) {
-	return nil, status.Error(codes.Unimplemented, "method SayHello not implemented")
+func (UnimplementedStoreServiceServer) CreateIPAddress(context.Context, *IPAddressAsset) (*IPAddressEntity, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateIPAddress not implemented")
 }
-func (UnimplementedGreetingServer) mustEmbedUnimplementedGreetingServer() {}
-func (UnimplementedGreetingServer) testEmbeddedByValue()                  {}
+func (UnimplementedStoreServiceServer) mustEmbedUnimplementedStoreServiceServer() {}
+func (UnimplementedStoreServiceServer) testEmbeddedByValue()                      {}
 
-// UnsafeGreetingServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to GreetingServer will
+// UnsafeStoreServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to StoreServiceServer will
 // result in compilation errors.
-type UnsafeGreetingServer interface {
-	mustEmbedUnimplementedGreetingServer()
+type UnsafeStoreServiceServer interface {
+	mustEmbedUnimplementedStoreServiceServer()
 }
 
-func RegisterGreetingServer(s grpc.ServiceRegistrar, srv GreetingServer) {
-	// If the following call panics, it indicates UnimplementedGreetingServer was
+func RegisterStoreServiceServer(s grpc.ServiceRegistrar, srv StoreServiceServer) {
+	// If the following call panics, it indicates UnimplementedStoreServiceServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&Greeting_ServiceDesc, srv)
+	s.RegisterService(&StoreService_ServiceDesc, srv)
 }
 
-func _Greeting_SayHello_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SayHelloInput)
+func _StoreService_CreateIPAddress_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IPAddressAsset)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(GreetingServer).SayHello(ctx, in)
+		return srv.(StoreServiceServer).CreateIPAddress(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Greeting_SayHello_FullMethodName,
+		FullMethod: StoreService_CreateIPAddress_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GreetingServer).SayHello(ctx, req.(*SayHelloInput))
+		return srv.(StoreServiceServer).CreateIPAddress(ctx, req.(*IPAddressAsset))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// Greeting_ServiceDesc is the grpc.ServiceDesc for Greeting service.
+// StoreService_ServiceDesc is the grpc.ServiceDesc for StoreService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Greeting_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "api.Greeting",
-	HandlerType: (*GreetingServer)(nil),
+var StoreService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "api.StoreService",
+	HandlerType: (*StoreServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "SayHello",
-			Handler:    _Greeting_SayHello_Handler,
+			MethodName: "CreateIPAddress",
+			Handler:    _StoreService_CreateIPAddress_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

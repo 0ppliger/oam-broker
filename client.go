@@ -21,14 +21,17 @@ func main() {
 	}
 	defer cnx.Close()
 
-	c := api.NewGreetingClient(cnx)
+	c := api.NewStoreServiceClient(cnx)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	out, err := c.SayHello(ctx, &api.SayHelloInput{Value: "Julien"})
+	out, err := c.CreateIPAddress(ctx, &api.IPAddressAsset{
+		Address: "10.0.0.2",
+		Type: "IPv4",
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Printf("%s\n", out.Value)
+	log.Printf("%s\n", out.Id)
 }

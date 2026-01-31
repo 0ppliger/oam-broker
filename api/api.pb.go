@@ -9,6 +9,7 @@ package api
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -21,27 +22,28 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type SayHelloInput struct {
+type IPAddressAsset struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Value         string                 `protobuf:"bytes,1,opt,name=value,proto3" json:"value,omitempty"`
+	Type          string                 `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
+	Address       string                 `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *SayHelloInput) Reset() {
-	*x = SayHelloInput{}
+func (x *IPAddressAsset) Reset() {
+	*x = IPAddressAsset{}
 	mi := &file_api_api_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *SayHelloInput) String() string {
+func (x *IPAddressAsset) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*SayHelloInput) ProtoMessage() {}
+func (*IPAddressAsset) ProtoMessage() {}
 
-func (x *SayHelloInput) ProtoReflect() protoreflect.Message {
+func (x *IPAddressAsset) ProtoReflect() protoreflect.Message {
 	mi := &file_api_api_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -53,39 +55,49 @@ func (x *SayHelloInput) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use SayHelloInput.ProtoReflect.Descriptor instead.
-func (*SayHelloInput) Descriptor() ([]byte, []int) {
+// Deprecated: Use IPAddressAsset.ProtoReflect.Descriptor instead.
+func (*IPAddressAsset) Descriptor() ([]byte, []int) {
 	return file_api_api_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *SayHelloInput) GetValue() string {
+func (x *IPAddressAsset) GetType() string {
 	if x != nil {
-		return x.Value
+		return x.Type
 	}
 	return ""
 }
 
-type SayHelloOutput struct {
+func (x *IPAddressAsset) GetAddress() string {
+	if x != nil {
+		return x.Address
+	}
+	return ""
+}
+
+type IPAddressEntity struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Value         string                 `protobuf:"bytes,1,opt,name=value,proto3" json:"value,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Asset         *IPAddressAsset        `protobuf:"bytes,2,opt,name=asset,proto3" json:"asset,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	LastSeen      *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=last_seen,json=lastSeen,proto3" json:"last_seen,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *SayHelloOutput) Reset() {
-	*x = SayHelloOutput{}
+func (x *IPAddressEntity) Reset() {
+	*x = IPAddressEntity{}
 	mi := &file_api_api_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *SayHelloOutput) String() string {
+func (x *IPAddressEntity) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*SayHelloOutput) ProtoMessage() {}
+func (*IPAddressEntity) ProtoMessage() {}
 
-func (x *SayHelloOutput) ProtoReflect() protoreflect.Message {
+func (x *IPAddressEntity) ProtoReflect() protoreflect.Message {
 	mi := &file_api_api_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -97,29 +109,55 @@ func (x *SayHelloOutput) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use SayHelloOutput.ProtoReflect.Descriptor instead.
-func (*SayHelloOutput) Descriptor() ([]byte, []int) {
+// Deprecated: Use IPAddressEntity.ProtoReflect.Descriptor instead.
+func (*IPAddressEntity) Descriptor() ([]byte, []int) {
 	return file_api_api_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *SayHelloOutput) GetValue() string {
+func (x *IPAddressEntity) GetId() string {
 	if x != nil {
-		return x.Value
+		return x.Id
 	}
 	return ""
+}
+
+func (x *IPAddressEntity) GetAsset() *IPAddressAsset {
+	if x != nil {
+		return x.Asset
+	}
+	return nil
+}
+
+func (x *IPAddressEntity) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+func (x *IPAddressEntity) GetLastSeen() *timestamppb.Timestamp {
+	if x != nil {
+		return x.LastSeen
+	}
+	return nil
 }
 
 var File_api_api_proto protoreflect.FileDescriptor
 
 const file_api_api_proto_rawDesc = "" +
 	"\n" +
-	"\rapi/api.proto\x12\x03api\"%\n" +
-	"\rSayHelloInput\x12\x14\n" +
-	"\x05value\x18\x01 \x01(\tR\x05value\"&\n" +
-	"\x0eSayHelloOutput\x12\x14\n" +
-	"\x05value\x18\x01 \x01(\tR\x05value2A\n" +
-	"\bGreeting\x125\n" +
-	"\bSayHello\x12\x12.api.SayHelloInput\x1a\x13.api.SayHelloOutput\"\x00B,Z*github.com/0ppliger/open-asset-gateway/apib\x06proto3"
+	"\rapi/api.proto\x12\x03api\x1a\x1fgoogle/protobuf/timestamp.proto\">\n" +
+	"\x0eIPAddressAsset\x12\x12\n" +
+	"\x04type\x18\x01 \x01(\tR\x04type\x12\x18\n" +
+	"\aaddress\x18\x02 \x01(\tR\aaddress\"\xc0\x01\n" +
+	"\x0fIPAddressEntity\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12)\n" +
+	"\x05asset\x18\x02 \x01(\v2\x13.api.IPAddressAssetR\x05asset\x129\n" +
+	"\n" +
+	"created_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x127\n" +
+	"\tlast_seen\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\blastSeen2N\n" +
+	"\fStoreService\x12>\n" +
+	"\x0fCreateIPAddress\x12\x13.api.IPAddressAsset\x1a\x14.api.IPAddressEntity\"\x00B,Z*github.com/0ppliger/open-asset-gateway/apib\x06proto3"
 
 var (
 	file_api_api_proto_rawDescOnce sync.Once
@@ -135,17 +173,21 @@ func file_api_api_proto_rawDescGZIP() []byte {
 
 var file_api_api_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_api_api_proto_goTypes = []any{
-	(*SayHelloInput)(nil),  // 0: api.SayHelloInput
-	(*SayHelloOutput)(nil), // 1: api.SayHelloOutput
+	(*IPAddressAsset)(nil),        // 0: api.IPAddressAsset
+	(*IPAddressEntity)(nil),       // 1: api.IPAddressEntity
+	(*timestamppb.Timestamp)(nil), // 2: google.protobuf.Timestamp
 }
 var file_api_api_proto_depIdxs = []int32{
-	0, // 0: api.Greeting.SayHello:input_type -> api.SayHelloInput
-	1, // 1: api.Greeting.SayHello:output_type -> api.SayHelloOutput
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0, // 0: api.IPAddressEntity.asset:type_name -> api.IPAddressAsset
+	2, // 1: api.IPAddressEntity.created_at:type_name -> google.protobuf.Timestamp
+	2, // 2: api.IPAddressEntity.last_seen:type_name -> google.protobuf.Timestamp
+	0, // 3: api.StoreService.CreateIPAddress:input_type -> api.IPAddressAsset
+	1, // 4: api.StoreService.CreateIPAddress:output_type -> api.IPAddressEntity
+	4, // [4:5] is the sub-list for method output_type
+	3, // [3:4] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_api_api_proto_init() }
