@@ -1,70 +1,125 @@
 package main
 
 import (
-	"log"
-	"net"
+	"encoding/json"
+	"net/http"
+	"reflect"
 	"context"
-	"net/netip"
-
-	"google.golang.org/grpc"
-	"github.com/0ppliger/open-asset-gateway/api"
-	"google.golang.org/protobuf/types/known/timestamppb"
-	neo_db "github.com/owasp-amass/asset-db/repository/neo4j"
-	network "github.com/owasp-amass/open-asset-model/network"
+	"github.com/owasp-amass/asset-db/repository/neo4j"
+	oam "github.com/owasp-amass/open-asset-model"
+	oam_dns "github.com/owasp-amass/open-asset-model/dns"
+	oam_net "github.com/owasp-amass/open-asset-model/network"
+	oam_org "github.com/owasp-amass/open-asset-model/org"
+	oam_url "github.com/owasp-amass/open-asset-model/url"
+	oam_cert "github.com/owasp-amass/open-asset-model/certificate"
+	oam_pf "github.com/owasp-amass/open-asset-model/platform"
+	oam_contact "github.com/owasp-amass/open-asset-model/contact"
+	oam_file "github.com/owasp-amass/open-asset-model/file"
+	oam_financial "github.com/owasp-amass/open-asset-model/financial"
+	oam_general "github.com/owasp-amass/open-asset-model/general"
+	oam_people "github.com/owasp-amass/open-asset-model/people"
+	oam_reg "github.com/owasp-amass/open-asset-model/registration"
+	oam_account "github.com/owasp-amass/open-asset-model/account"
 )
 
-type Server struct {
-	api.UnimplementedStoreServiceServer
+
+type AssetInput struct {
+	Type oam.AssetType `json:"type"`
+	Payload json.RawMessage `json:"payload"`
 }
 
-func (s *Server) CreateIPAddress(
-	ctx context.Context,
-	input *api.IPAddressAsset,
-) (*api.IPAddressEntity, error) {
-	store, err := neo_db.New(neo_db.Neo4j, "bolt://neo4j:password@localhost:7687/neo4j")
-	if err != nil {
-		log.Fatal(err)
+var assetTypes = map[oam.AssetType]reflect.Type{
+	oam.Account          : reflect.TypeOf(oam_account.Account{}),
+	oam.AutnumRecord     : reflect.TypeOf(oam_reg.AutnumRecord{}),
+	oam.AutonomousSystem : reflect.TypeOf(oam_net.AutonomousSystem{}),
+	oam.ContactRecord    : reflect.TypeOf(oam_contact.ContactRecord{}),
+	oam.DomainRecord     : reflect.TypeOf(oam_reg.DomainRecord{}),
+	oam.File             : reflect.TypeOf(oam_file.File{}),
+	oam.FQDN             : reflect.TypeOf(oam_dns.FQDN{}),
+	oam.FundsTransfer    : reflect.TypeOf(oam_financial.FundsTransfer{}),
+	oam.Identifier       : reflect.TypeOf(oam_general.Identifier{}),
+	oam.IPAddress        : reflect.TypeOf(oam_net.IPAddress{}),
+	oam.IPNetRecord      : reflect.TypeOf(oam_reg.IPNetRecord{}),
+	oam.Location         : reflect.TypeOf(oam_contact.Location{}),
+	oam.Netblock         : reflect.TypeOf(oam_net.Netblock{}),
+	oam.Organization     : reflect.TypeOf(oam_org.Organization{}),
+	oam.Person           : reflect.TypeOf(oam_people.Person{}),
+	oam.Phone            : reflect.TypeOf(oam_contact.Phone{}),
+	oam.Product          : reflect.TypeOf(oam_pf.Product{}),
+	oam.ProductRelease   : reflect.TypeOf(oam_pf.ProductRelease{}),
+	oam.Service          : reflect.TypeOf(oam_pf.Service{}),
+	oam.TLSCertificate   : reflect.TypeOf(oam_cert.TLSCertificate{}),
+	oam.URL              : reflect.TypeOf(oam_url.URL{}),
+}
+
+type assetHandler struct {}
+
+func (h *assetHandler) Hello(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Hello world"))
+}
+func (h *assetHandler) upsertAsset(w http.ResponseWriter, r *http.Request) {
+	if r.Body == nil {
+		http.Error(w, "no body", http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	var input AssetInput
+	
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&input); err != nil {
+		http.Error(w, "invalid JSON: "+err.Error(), http.StatusBadRequest)
+		return
 	}
 
-	ip_address, err := netip.ParseAddr(input.Address)
-	if err != nil {
-		log.Fatal(err)
+	T, ok := assetTypes[input.Type]
+	if !ok {
+		http.Error(w, "unsupported asset type", http.StatusBadRequest)
+		return
 	}
 
-	ip_type := input.Type
-	if ip_type != "IPv4" && ip_type != "IPv6" {
-		log.Fatalf("Wrong IP type (IPv4 or IPv6)")
+	neo_store, err := neo4j.New(neo4j.Neo4j, "bolt://neo4j:password@localhost:7687/neo4j")
+	if err != nil {
+		http.Error(w, "Unable to connect to db: "+err.Error(), http.StatusBadRequest)
+		return		
+	}
+
+	asset := reflect.New(T)
+
+	if err := json.Unmarshal(input.Payload, asset.Interface()); err != nil {
+		http.Error(w, "invalid FQDN: "+err.Error(), http.StatusBadRequest)
+		return
 	}
 	
-
-	entity, err := store.CreateAsset(&network.IPAddress{
-		Address: ip_address,
-		Type: ip_type,
-	})
+	ctx := context.Background()
+	entity, err := neo_store.CreateAsset(ctx, asset.Interface().(oam.Asset))
 	if err != nil {
-		log.Fatal(err)
+		http.Error(w, "Failed to create asset: "+err.Error(), http.StatusBadRequest)
+		return
 	}
+
+	w.Write([]byte(entity.ID))
 	
-	return &api.IPAddressEntity{
-		Id: entity.ID,
-		Asset: input,
-		CreatedAt: timestamppb.New(entity.CreatedAt),
-		LastSeen: timestamppb.New(entity.LastSeen),
-	}, nil
+}
+
+func (h *assetHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	switch {
+	case r.Method == http.MethodGet:
+		h.Hello(w, r)
+		return
+	case r.Method == http.MethodPost:
+		h.upsertAsset(w, r)
+		return
+	default:
+		return
+	}
 }
 
 func main() {
-	lis, err := net.Listen("tcp", ":9000")
-	if err != nil {
-		log.Fatalf("Failed to listen on port 9000: %v", err)
-	}
+	mux := http.NewServeMux()
 
-	grpcServer := grpc.NewServer()
+	mux.Handle("/asset", &assetHandler{})
+	mux.Handle("/asset/", &assetHandler{})
 
-	api.RegisterStoreServiceServer(grpcServer, &Server{})
-
-	log.Printf("Starting to listen on port 9000...")
-	if err := grpcServer.Serve(lis); err != nil {
-		log.Fatalf("Failed to serve gRPC server over port 9000: %v", err)
-	}
+	http.ListenAndServe(":8080", mux)
 }
