@@ -38,5 +38,12 @@ func main() {
 	mux.HandleFunc("DELETE /emit/edge_tag/{id}", api.deleteEdgeTag)
 	mux.HandleFunc("PUT /emit/edge_tag/{id}", api.updateEdgeTag)
 
-	http.ListenAndServe(":8080", mux)
+	server := &http.Server{
+		Addr:    ":443",
+		Handler: mux,
+	}
+	
+	if err := server.ListenAndServeTLS("tls/cert.pem", "tls/key.pem"); err != nil {
+		panic(err)
+	}
 }
