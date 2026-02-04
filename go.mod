@@ -1,4 +1,4 @@
-module github.com/0ppliger/open-asset-gateway
+module github.com/0ppliger/oam-broker
 
 go 1.24.0
 

@@ -55,7 +55,7 @@ func (a *Edge) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (api *ApiV1) createEdge(w http.ResponseWriter, r *http.Request) {
+func (api *ApiV1) CreateEdge(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
 		http.Error(w, "no body", http.StatusBadRequest)
 		return
@@ -100,7 +100,7 @@ func (api *ApiV1) createEdge(w http.ResponseWriter, r *http.Request) {
 }
 
 
-func (api *ApiV1) deleteEdge(w http.ResponseWriter, r *http.Request) {	
+func (api *ApiV1) DeleteEdge(w http.ResponseWriter, r *http.Request) {	
 	id := r.PathValue("id")
 	
 	if err := api.store.DeleteEdge(api.ctx, id); err != nil {
@@ -113,7 +113,7 @@ func (api *ApiV1) deleteEdge(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(json))
 }
 
-func (api *ApiV1) updateEdge(w http.ResponseWriter, r *http.Request) {
+func (api *ApiV1) UpdateEdge(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	
 	if r.Body == nil {

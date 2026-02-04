@@ -54,7 +54,7 @@ func (a *EntityTag) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (api *ApiV1) createEntityTag(w http.ResponseWriter, r *http.Request) {
+func (api *ApiV1) CreateEntityTag(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
 		http.Error(w, "no body", http.StatusBadRequest)
 		return
@@ -91,7 +91,7 @@ func (api *ApiV1) createEntityTag(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(json))	
 }
 
-func (api *ApiV1) deleteEntityTag(w http.ResponseWriter, r *http.Request) {	
+func (api *ApiV1) DeleteEntityTag(w http.ResponseWriter, r *http.Request) {	
 	id := r.PathValue("id")
 	
 	if err := api.store.DeleteEntityTag(api.ctx, id); err != nil {
@@ -104,7 +104,7 @@ func (api *ApiV1) deleteEntityTag(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(json))
 }
 
-func (api *ApiV1) updateEntityTag(w http.ResponseWriter, r *http.Request) {
+func (api *ApiV1) UpdateEntityTag(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	
 	if r.Body == nil {

@@ -44,7 +44,7 @@ func (a *EdgeTag) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (api *ApiV1) createEdgeTag(w http.ResponseWriter, r *http.Request) {
+func (api *ApiV1) CreateEdgeTag(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
 		http.Error(w, "no body", http.StatusBadRequest)
 		return
@@ -81,7 +81,7 @@ func (api *ApiV1) createEdgeTag(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(json))	
 }
 
-func (api *ApiV1) deleteEdgeTag(w http.ResponseWriter, r *http.Request) {	
+func (api *ApiV1) DeleteEdgeTag(w http.ResponseWriter, r *http.Request) {	
 	id := r.PathValue("id")
 	
 	if err := api.store.DeleteEdgeTag(api.ctx, id); err != nil {
@@ -94,7 +94,7 @@ func (api *ApiV1) deleteEdgeTag(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(json))
 }
 
-func (api *ApiV1) updateEdgeTag(w http.ResponseWriter, r *http.Request) {
+func (api *ApiV1) UpdateEdgeTag(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	
 	if r.Body == nil {

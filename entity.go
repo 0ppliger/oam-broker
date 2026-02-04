@@ -80,7 +80,7 @@ func (a *Entity) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (api *ApiV1) createEntity(w http.ResponseWriter, r *http.Request) {
+func (api *ApiV1) CreateEntity(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
 		http.Error(w, "no body", http.StatusBadRequest)
 		return
@@ -105,25 +105,37 @@ func (api *ApiV1) createEntity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	json_asset, _ := out_entity.Asset.JSON()
+	api.bus.Publish(out_entity.ID, EntityCreated, json_asset)
+
 	res := Response{ Subject: out_entity.ID, Action: "upserted" }
 	json, _ := json.Marshal(res)
 	w.Write([]byte(json))	
 }
 
-func (api *ApiV1) deleteEntity(w http.ResponseWriter, r *http.Request) {	
+func (api *ApiV1) DeleteEntity(w http.ResponseWriter, r *http.Request) {	
 	id := r.PathValue("id")
+
+	entity, err := api.store.FindEntityById(api.ctx, id)
+	if err != nil {
+		http.Error(w, "Cannot find to entity: "+err.Error(), http.StatusBadRequest)
+		return		
+	}
 	
 	if err := api.store.DeleteEntity(api.ctx, id); err != nil {
 		http.Error(w, "Failed to delete entity: "+err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	json_asset, _ := entity.Asset.JSON()
+	api.bus.Publish(entity.ID, EntityDeleted, json_asset)
 	
 	res := Response{ Subject: id, Action: "deleted" }
 	json, _ := json.Marshal(res)
 	w.Write([]byte(json))
 }
 
-func (api *ApiV1) updateEntity(w http.ResponseWriter, r *http.Request) {	
+func (api *ApiV1) UpdateEntity(w http.ResponseWriter, r *http.Request) {	
 	id := r.PathValue("id")
 
 	if r.Body == nil {
@@ -156,6 +168,9 @@ func (api *ApiV1) updateEntity(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to upsert asset: "+err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	json_asset, _ := out_entity.Asset.JSON()
+	api.bus.Publish(out_entity.ID, EntityUpdated, json_asset)
 	
 	res := Response{ Subject: out_entity.ID, Action: "updated" }
 	json, _ := json.Marshal(res)

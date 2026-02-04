@@ -20,23 +20,28 @@ func main() {
 	api := &ApiV1{
 		ctx: context.Background(),
 		store: store,
+		bus: &EventBus{
+			subscribers: make(map[chan ServerSentEvent]bool),
+		},
 	}
-	
-	mux.HandleFunc("POST /emit/entity", api.createEntity)
-	mux.HandleFunc("DELETE /emit/entity/{id}", api.deleteEntity)
-	mux.HandleFunc("PUT /emit/entity/{id}", api.updateEntity)
-	
-	mux.HandleFunc("POST /emit/edge", api.createEdge)
-	mux.HandleFunc("DELETE /emit/edge/{id}", api.deleteEdge)
-	mux.HandleFunc("PUT /emit/edge/{id}", api.updateEdge)
-	
-	mux.HandleFunc("POST /emit/entity_tag", api.createEntityTag)
-	mux.HandleFunc("DELETE /emit/entity_tag/{id}", api.deleteEntityTag)
-	mux.HandleFunc("PUT /emit/entity_tag/{id}", api.updateEntityTag)
 
-	mux.HandleFunc("POST /emit/edge_tag", api.createEdgeTag)
-	mux.HandleFunc("DELETE /emit/edge_tag/{id}", api.deleteEdgeTag)
-	mux.HandleFunc("PUT /emit/edge_tag/{id}", api.updateEdgeTag)
+	mux.HandleFunc("GET /listen", api.ListenEvents)
+	
+	mux.HandleFunc("POST /emit/entity", api.CreateEntity)
+	mux.HandleFunc("DELETE /emit/entity/{id}", api.DeleteEntity)
+	mux.HandleFunc("PUT /emit/entity/{id}", api.UpdateEntity)
+	
+	mux.HandleFunc("POST /emit/edge", api.CreateEdge)
+	mux.HandleFunc("DELETE /emit/edge/{id}", api.DeleteEdge)
+	mux.HandleFunc("PUT /emit/edge/{id}", api.UpdateEdge)
+	
+	mux.HandleFunc("POST /emit/entity_tag", api.CreateEntityTag)
+	mux.HandleFunc("DELETE /emit/entity_tag/{id}", api.DeleteEntityTag)
+	mux.HandleFunc("PUT /emit/entity_tag/{id}", api.UpdateEntityTag)
+
+	mux.HandleFunc("POST /emit/edge_tag", api.CreateEdgeTag)
+	mux.HandleFunc("DELETE /emit/edge_tag/{id}", api.DeleteEdgeTag)
+	mux.HandleFunc("PUT /emit/edge_tag/{id}", api.UpdateEdgeTag)
 
 	server := &http.Server{
 		Addr:    ":443",

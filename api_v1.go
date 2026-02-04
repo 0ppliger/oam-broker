@@ -8,6 +8,7 @@ import (
 type ApiV1 struct {
 	ctx context.Context
 	store repository.Repository
+	bus *EventBus
 }
 
 type Response struct {
