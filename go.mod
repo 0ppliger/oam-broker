@@ -3,6 +3,7 @@ module github.com/0ppliger/oam-broker
 go 1.24.0
 
 replace github.com/owasp-amass/asset-db => ../asset-db
+replace github.com/owasp-amass/open-asset-model => ../open-asset-model
 
 require (
 	github.com/owasp-amass/asset-db v0.23.1
