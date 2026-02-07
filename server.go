@@ -1,28 +1,46 @@
 package main
 
 import (
+	"os"
 	"fmt"
 	"net/http"
 	"context"
 	"github.com/owasp-amass/asset-db/repository/neo4j"
+
+	"github.com/sirupsen/logrus"
 )
 
 
 func main() {
 	mux := http.NewServeMux()
 
+	logger := logrus.New()
+
+	loglevel, ok := os.LookupEnv("LOGLEVEL")
+	if !ok {
+		loglevel = "INFO"
+	}
+	
+	ll, err := logrus.ParseLevel(loglevel)
+	if err != nil {
+		ll = logrus.InfoLevel
+	}
+	
+	logger.SetLevel(ll)
+	
 	store, err := neo4j.New(neo4j.Neo4j, "bolt://neo4j:password@localhost:7687/neo4j")
 	if err != nil {
 		fmt.Println("Unable to connect to asset store: "+err.Error())
 		return		
 	}
-
+	
 	api := &ApiV1{
 		ctx: context.Background(),
 		store: store,
 		bus: &EventBus{
 			subscribers: make(map[chan ServerSentEvent]bool),
 		},
+		logger: logger,
 	}
 
 	mux.HandleFunc("GET /listen", api.ListenEvents)

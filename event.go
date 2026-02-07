@@ -4,55 +4,17 @@ import (
 	"net/http"
 	"fmt"
 	"sync"
+	dbe "github.com/owasp-amass/asset-db/events"
 )
 
-type EventType int
-
-const (
-	EntityCreated EventType = iota
-	EntityDeleted
-	EntityUpdated
-	EntityTouched
-	EdgeCreated
-	EdgeDeleted
-	EdgeUpdated
-	EdgeTouched
-	EdgeTagCreated
-	EdgeTagDeleted
-	EdgeTagUpdated
-	EdgeTagTouched
-	EntityTagCreated
-	EntityTagDeleted
-	EntityTagUpdated
-	EntityTagTouched
-)
-
-var eventName = map[EventType]string{
-	EntityCreated: "EntityCreated",
-	EntityDeleted: "EntityDeleted",
-	EntityUpdated: "EntityUpdated",
-	EntityTouched: "EntityTouched",
-	EdgeCreated: "EdgeCreated",
-	EdgeDeleted: "EdgeDeleted",
-	EdgeUpdated: "EdgeUpdated",
-	EdgeTouched: "EdgeTouched",
-	EdgeTagCreated: "EdgeTagCreated",
-	EdgeTagDeleted: "EdgeTagDeleted",
-	EdgeTagUpdated: "EdgeTagUpdated",
-	EdgeTagTouched: "EdgeTagTouched",
-	EntityTagCreated: "EntityTagCreated",
-	EntityTagDeleted: "EntityTagDeleted",
-	EntityTagUpdated: "EntityTagUpdated",
-	EntityTagTouched: "EntityTagTouched",
-}
 
 type ServerSentEvent struct {
-	Event EventType
+	Event dbe.EventType
 	Data Serializable
 }
 
 func (sse ServerSentEvent) Write(w http.ResponseWriter) {
-	fmt.Fprintf(w, "event: %s\ndata: %s\n\n", eventName[sse.Event], sse.Data.JSON())
+	fmt.Fprintf(w, "event: %s\ndata: %s\n\n", sse.Event, sse.Data.JSON())
 }
 
 type EventBus struct {
@@ -77,7 +39,7 @@ func (bus *EventBus) RemoveSubscriber(ch chan ServerSentEvent) {
 	close(ch)
 }
 
-func (bus *EventBus) Publish(event EventType, data Serializable) {
+func (bus *EventBus) Publish(event dbe.EventType, data Serializable) {
 
 	sse := ServerSentEvent{
 		Event: event,

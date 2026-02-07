@@ -1,27 +1,29 @@
 package main
 
 import (
+	"io"
 	"encoding/json"
-	"fmt"
 	"errors"
+	"fmt"
 	"net/http"
 	"reflect"
 	"time"
+
 	dbt "github.com/owasp-amass/asset-db/types"
 	oam "github.com/owasp-amass/open-asset-model"
-	oam_dns "github.com/owasp-amass/open-asset-model/dns"
-	oam_net "github.com/owasp-amass/open-asset-model/network"
-	oam_org "github.com/owasp-amass/open-asset-model/org"
-	oam_url "github.com/owasp-amass/open-asset-model/url"
+	oam_account "github.com/owasp-amass/open-asset-model/account"
 	oam_cert "github.com/owasp-amass/open-asset-model/certificate"
-	oam_pf "github.com/owasp-amass/open-asset-model/platform"
 	oam_contact "github.com/owasp-amass/open-asset-model/contact"
+	oam_dns "github.com/owasp-amass/open-asset-model/dns"
 	oam_file "github.com/owasp-amass/open-asset-model/file"
 	oam_financial "github.com/owasp-amass/open-asset-model/financial"
 	oam_general "github.com/owasp-amass/open-asset-model/general"
+	oam_net "github.com/owasp-amass/open-asset-model/network"
+	oam_org "github.com/owasp-amass/open-asset-model/org"
 	oam_people "github.com/owasp-amass/open-asset-model/people"
+	oam_pf "github.com/owasp-amass/open-asset-model/platform"
 	oam_reg "github.com/owasp-amass/open-asset-model/registration"
-	oam_account "github.com/owasp-amass/open-asset-model/account"
+	oam_url "github.com/owasp-amass/open-asset-model/url"
 )
 
 var assetTypes = map[oam.AssetType]reflect.Type{
@@ -115,22 +117,35 @@ func (api *ApiV1) CreateEntity(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
+	json_body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Error reading request body", http.StatusBadRequest)
+		return
+	}
+
+	api.logger.Debug("CreateEntity: Receive body: ", string(json_body))
+	
 	var input Entity
 	
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&input); err != nil {
+	if err := json.Unmarshal(json_body, &input); err != nil {
+		api.logger.Info("invalid JSON: "+err.Error())
 		http.Error(w, "invalid JSON: "+err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	api.logger.Debug("CreateEntity: Parse JSON: ", input)
 	
 	out, err := api.store.CreateEntity(api.ctx, input.ToStore())
 	if err != nil {
+		api.logger.Info("Failed to upsert asset: "+err.Error())
 		http.Error(w, "Failed to upsert asset: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 	created_entity := EntityFromStore(out)
+
+	db_event := api.store.GetLastEvent()
 	
-	api.bus.Publish(EntityCreated, created_entity)
+	api.bus.Publish(db_event, created_entity)
 
 	w.Write(created_entity.JSON())	
 }
@@ -150,7 +165,9 @@ func (api *ApiV1) DeleteEntity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.bus.Publish(EntityDeleted, deleted_entity)
+	db_event := api.store.GetLastEvent()
+	
+	api.bus.Publish(db_event, deleted_entity)
 	
 	w.Write(deleted_entity.JSON())
 }
@@ -187,7 +204,9 @@ func (api *ApiV1) UpdateEntity(w http.ResponseWriter, r *http.Request) {
 	}
 	updated_entity := EntityFromStore(out)
 
-	api.bus.Publish(EntityUpdated, updated_entity)
+	db_event := api.store.GetLastEvent()
+	
+	api.bus.Publish(db_event, updated_entity)
 	
 	w.Write(updated_entity.JSON())
 }
